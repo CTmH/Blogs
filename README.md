@@ -5,6 +5,11 @@
 [项目第1周日志](https://ctmh.github.io/Blogs/Week1Log)
 
 [项目第2周日志](https://ctmh.github.io/Blogs/Week2Log)
+
+[项目第3周日志](https://ctmh.github.io/Blogs/Week3Log)
+
+[项目第4周日志](https://ctmh.github.io/Blogs/Week4Log)
+
 # 开发时间预估和实际开发时间
  |psp2.1| Personal Software Pricess Stages| 预估耗时（分钟）|实际耗时（分钟）
 |--|:-|--|--|
