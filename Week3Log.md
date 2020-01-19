@@ -98,3 +98,66 @@ void SearchSys::get_all_pairs_shorest_graph()
   …
 ```
 **至此所有的查询功能已经实现**
+
+### 图形用户界面
+
+#### 处理从xml文件的输入
+
+使用xml.etree.cElementTree模块进行xml文件的信息处理操作，获得用于生成线路图的站点线路信息
+```python
+tree = ET.parse(path)
+    map = tree.getroot()
+    # 长宽记录
+    w = int(map.find('w').text)
+    h = int(map.find('h').text)
+     for line in map.findall('line'):  # 查找所有线路
+     ......
+     for station in line: # 查找线路下的所有站点
+     ......
+```
+#### 主要组件
+
+GUI包括Lable、输入框、按钮，以及地铁线路图、输出消息栏。
+使用tkinter组件建立窗口、按钮等组件
+
+使用标签创建地铁线路图，每个标签都代表一个站点
+```python
+for tmp_station in station_list:
+    text = tmp_station.sname
+    mapx = tmp_station.mapx
+    mapy = tmp_station.mapy
+    lname_list = tmp_station.lname_list
+    lname = lname_list[0]
+    color = "white"
+    l = tk.Label(window, text=text, bg= color, font=('Aerial', 8))//根据temp_station的信息初始化标签
+    l.place(x=mapx, y=mapy)
+    station_label_list.append((tmp_station, l))
+```
+#### 调用查询程序
+利用subprocess调用可执行文件Metroplan
+```python
+ child = subprocess.Popen(['./Metroplan', 'BEIJING','-c', cost, '-s', start_name, end_name]) 
+    child.wait()  # 子进程等待
+```
+返回结果采用共享文件，之后根据结果输出图形变换
+```python
+ tmp_sname_list = []
+    input_path = 'shortest_path.txt' # 通过记录的结果文件，读取对应文件
+    input_file = codecs.open(input_path, 'r')
+……
+# 根据后端返回的信息，按顺序在地图上显示出来，并使用红色表示经历过的，蓝色表示正在经历的
+def show_line(tmp_sname_list):
+    num = 0
+    for tmp_sname in tmp_sname_list:
+        num  = num +1  # 每次高亮显示一个站点，记录+1
+        NUM["text"] = "经过的站点数："+str(num)
+        for (tmp_station, l) in station_label_list:
+            if tmp_sname == tmp_station.sname:
+                l['bg'] = 'blue'
+                # last_one = i
+                l.update()
+                time.sleep(.200)
+                l['bg'] = 'red'
+                # ls.update()
+                break
+```
