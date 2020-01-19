@@ -21,11 +21,68 @@
 
 首先根据地铁线路图构建地铁站之间的最短通路图，最短通路图当中的点就是地铁线路图当中的地铁站，边是两点之间的最短线路的边权和。在最短通路图上的TSP问题的解就是线路图中待求问题的解。
 
-因此，我们首先在系统类初始化时生成地铁线路图的最短线路图。再设计函数，查找最短线路图上输入起点的TSP解的路径序列，然后获得序列上相邻点之间的最短路径，
-将这些路径拼接就构成了所求解。
-
 这一算法的正确性可以在论文[《具有重复路径的有向TSP问题》](https://kns.cnki.net/KCMS/detail/detail.aspx?dbcode=CJFQ&dbname=CJFD2010&filename=CAIZ201017222&v=MjEwNjhIOUhOcUkxSFpvUjhlWDFMdXhZUzdEaDFUM3FUcldNMUZyQ1VSN3FmWnVkbUZ5N25XcnZQSml6Q2RMRzQ=)当中找到证明。
 
+具体的实现代码如下：
+
+我们首先在系统类初始化时生成地铁线路图的最短线路图。
+
+```cpp
+void SearchSys::get_all_pairs_shorest_graph()
+{
+  VertexMap v_origin_map = get(vertex_index, mtgph); //地铁线路图的点集
+  int v_size = num_vertices(mtgph);
+  vector<vector<int>> D(v_size, vector<int>(v_size, 0)); //线路图的最小代价矩阵
+
+  johnson_all_pairs_shortest_paths(mtgph, D); //计算线路图的最小代价矩阵
+
+  for (int i = 0; i < v_size; i++)
+    for (int j = 0; j < v_size; j++)
+      if (D[i][j] != (std::numeric_limits<int>::max)() && i != j)
+        {
+          //转换为最短通路图
+          add_edge(v_origin_map[i], v_origin_map[j], D[i][j], all_pairs_shorest_graph);
+        }
+  return;
+}
+```
+
+再设计函数，查找最短线路图上输入起点的TSP解的路径序列，然后获得序列上相邻点之间的最短路径，
+将这些路径拼接就构成了所求解。
+```cpp
+//获得在最短通路图上的TSP路径
+  metric_tsp_approx_from_vertex(all_pairs_shorest_graph, src,
+                                get(edge_weight, all_pairs_shorest_graph), get(vertex_index, all_pairs_shorest_graph),
+                                tsp_tour_visitor<back_insert_iterator<vector<Vertex> > >
+                                (back_inserter(travel_trail)));
+  Path travel_path, tmp;
+
+  int last = -1, tmp_last = -1;
+  for (vector<Vertex>::iterator itr = travel_trail.begin(); itr != travel_trail.end(); ++itr)
+    {
+      if (graph_station_list[*itr].id != last)
+        {
+
+          if (last != -1)
+            {
+              //获得两个TSP路径点之间的实际路径
+              tmp = find_spath(graph_station_list[last].id, graph_station_list[*itr].id);
+              
+              vector<int>::iterator itmp = tmp.stnid.begin();
+              //拼接路径
+              for (; itmp != tmp.stnid.end(); ++itmp)
+                {
+                  if(graph_station_list[*itmp].id != tmp_last)
+                    travel_path.stnid.push_back(*itmp);
+                  tmp_last = graph_station_list[*itmp].id;
+                }
+            }
+          else travel_path.stnid.push_back(graph_station_list[*itr].id);
+        }
+      last = graph_station_list[*itr].id;
+    }
+```
+
 ### 选择合适的生成最短线路图函数
-求解这个问题的常见方法是Floyd-Warshall算法，时间复杂度为O(n^3)。但是地铁线路图的特点是图的边相对较少，因此我们查到了Johnson算法，
+求解全源最短路径问题的常见方法是Floyd-Warshall算法，时间复杂度为O(n^3)。但是地铁线路图的特点是图的边相对较少，因此我们查到了Johnson算法，
 该算法时间复杂度为O(nVlogV)，更适合边少点多的地铁线路图。
