@@ -86,3 +86,15 @@ void SearchSys::get_all_pairs_shorest_graph()
 ### 选择合适的生成最短线路图函数
 求解全源最短路径问题的常见方法是Floyd-Warshall算法，时间复杂度为O(n^3)。但是地铁线路图的特点是图的边相对较少，因此我们查到了Johnson算法，
 该算法时间复杂度为O(nVlogV)，更适合边少点多的地铁线路图。
+
+### 线路查询
+由于在读取线路图数据时已经生成了线路的站点表，因此只需获得站点名对应的索引，就可以直接取得线路站点。
+```cpp
+  map<string, int>::iterator l_it;
+  l_it = Line_nameToNum.find(linename); //查询索引
+  …
+  line.stnid = Line_list[line_id]; //取得线路
+  line.len = Line_list[line_id].size();
+  …
+```
+**至此所有的查询功能已经实现**
