@@ -19,3 +19,21 @@
 ![站点拆分示意图](./站点拆分示意图.png "站点拆分示意图")
 
 通过站点表和查询图站点表将被拆分处理后的结点和站点重新对应，输出时去掉遍历中相邻的重复结点就可以了。
+
+## 如何获取路线图数据
+
+通过读取txt中文本信息来构建线路图。
+在数据结构设计上，不存储各线路信息，只存储站点信息。
+
+## 图的数据结构
+
+定义SearchSys作为系统类，在SearchSys中定义有MetroGraph类型的图，是boost支持的邻接表。
+第三次结对：
+
+## 换乘站标示
+isTransfer数据类型采用int还是bool：int可以记录换乘站包含的线路数量；bool可以使代码更加易读，而线路数量可以采用vector的size方法直接调用查看。最终选择isTransfer采用bool形式处理。
+
+## graph_station包含内容
+对sysid到id的映射处理方法产生分歧：队友认为从sysid到id可以直接使用map或者使用以数组下标为索引的数组保存即可，将Station中对属于不同路线的同一站点使用vector<Sstation> TransferID保存；
+  
+我认为sysid到id使用Sstation结构体组成的vector查找，在读取地图信息同时建立该变长数组，优点是系统查找结束返回站点的时候不必再从Station里双循环遍历查找，可以节省时间。最终选择折衷的办法，同时建立vector<Sstation> TransferID和vector<Sstation> graph_station_list。
